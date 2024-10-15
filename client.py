@@ -7,6 +7,7 @@ import websockets
 from websockets.asyncio.client import connect
 
 from client_commands import ClientCommands
+from json_endpoints import flist_endpoint, endpoints
 from server_commands import ServerCommands
 
 log = logging.getLogger('main')
@@ -19,25 +20,32 @@ class Client:
         self.outgoing_queue = PriorityQueue()
         self.rate_limit = 1
         self.last_message_time = 0
+        self.ticket = None
+        self.ticket_expiry = None
 
         self.join_channels = config['join_channels']
+        self.op_channels = config['channel_ops']
         # self.current_channel = None
 
         self.server_command_list = ServerCommands.get_commands()
 
     async def login(self):
-        def get_ticket():
-            return "faketicket"
-
-        ticket = get_ticket()
+        ticket = self.get_ticket()
+        # {'characters': ['THEYSTUD SIMP'],
+        # 'default_character': '',
+        # 'ticket': 'fct_8db994568a7589337b144767c64c64e327ab8f99613d56f5266f893d58f280af',
+        # 'friends': [],
+        # 'bookmarks': [],
+        # 'error': ''}
+        assert(self.config['username'] in ticket['characters'])
 
         login_payload = {
             "method": "ticket",
             "account": self.config['username'],
             "ticket": ticket,
-            "character": self.config['character_name'],
-            "cname": '',
-            "cversion": '',
+            "character": self.config['character'],
+            "cname": self.config['bot_name'],
+            "cversion": self.config['bot_version'],
         }
 
         identified = await ClientCommands.identify(login_payload)
@@ -46,6 +54,17 @@ class Client:
             await self.ready()
         else:
             raise UnableToLoginError()
+
+    def get_ticket(self):
+        url = endpoints['get_ticket']
+        data = {
+            "account": self.config['account'],
+            "password": self.config['password'],
+        }
+
+        response = flist_endpoint(url, data)
+        assert(response.status_code == 200)
+        return response.json()
 
     async def ready(self):
         async with connect(self.url) as websocket:

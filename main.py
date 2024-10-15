@@ -1,8 +1,6 @@
 import asyncio
 import logging
-import json
 import os
-import websockets
 
 from client import Client
 
@@ -12,14 +10,18 @@ load_dotenv()
 config = {
     "url": "wss://chat.f-list.net/chat2",
     "chatop": False,
-    "channel_op": {}, # channel_op['my_channel'] = True
-    "character_name": os.getenv('character_name'),
-    "join_channels": os.getenv('channels', []),
     "username": os.getenv('username'),
     "password": os.getenv('password'),
+    "character_name": os.getenv('character'),
+    "join_channels": os.getenv('channels', []),
+    "channel_op": os.getenv('channel_op', []),
+    "bot_name": "Mommybot",
+    "bot_version": "0.1.0",
 }
 
-log = logging.getLogger()
+logging.basicConfig()
+log = logging.getLogger('main')
+log.setLevel(logging.DEBUG) # bring to Info later
 
 async def begin(config):
 
@@ -28,9 +30,8 @@ async def begin(config):
     if channel_ops:
         channel_ops = [el.strip() for el in channel_ops]
         channel_ops = list(filter(lambda x: bool(x), channel_ops))
-        channel_ops = {key: True for key in channel_ops}
     else:
-        channel_ops = {}
+        channel_ops = []
     config['channel_op'] = channel_ops
 
     channels = config['join_channels']
@@ -46,17 +47,6 @@ async def begin(config):
 
     ws = await client.login()
     await client.join_channels(config['join_channels'])
-
-
-    # connect to f-list
-    # - get ticket from json endpoint
-    # - connect to ws
-    # - identify
-    # - join channels
-    # - respond to pings
-    # - respond to messages
-    # - scan message for triggers
-    #  - perform triggers
 
 
 async def main():

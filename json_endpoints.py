@@ -10,13 +10,12 @@ config = {
     "ticket_exp": '',
 }
 
-def flist_endpoint(url, params): # params or data?
-    r = requests.post(url, params) # All endpoints use POST
+def flist_endpoint(url, data): # params and data both work, but params puts creds in url_path
+    r = requests.post(url, data=data) # All endpoints use POST
     log(r.status_code)
     response = r.json()
     log(json.dumps(response, indent=2))
     return response
-
 # Acquiring a ticket.
 # POST to 
 get_ticket_url = "https://www.f-list.net/json/getApiTicket.php" 
@@ -69,3 +68,8 @@ friend_request_list_url = "https://www.f-list.net/json/api/request-list.php" # G
 friend_request_outgoing_list_url = "https://www.f-list.net/json/api/request-pending.php" # Get all outgoing friend requests.
 
 friend_request_send_url = "https://www.f-list.net/json/api/request-send.php" # Send a friend request. source_name, dest_name.
+
+### implemented urls
+endpoints = {
+    "get_ticket": get_ticket_url,
+}

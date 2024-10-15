@@ -1,8 +1,6 @@
 import asyncio
 import logging
-import json
 import os
-import websockets
 
 from client import Client
 
@@ -10,13 +8,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 config = {
-    "url": "wss://chat.f-list.net/chat2",
+    "url": "ws://localhost:8110",
     "chatop": False,
-    "channel_op": {}, # channel_op['my_channel'] = True
-    "character_name": "",
-    "join_channels": os.getenv('channels'),
     "username": os.getenv('username'),
     "password": os.getenv('password'),
+    "character_name": os.getenv('character'),
+    "join_channels": os.getenv('channels', []),
+    "channel_op": os.getenv('channel_op', []),
+    "bot_name": "Mommybot",
+    "bot_version": "0.1.0",
 }
 
 logging.basicConfig()
