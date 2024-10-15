@@ -1,21 +1,14 @@
 
 import inspect
 
-def get_ticket():
-    return "ticket100"
-
 class ClientCommands:
     def prioritize(payload):
-        print('prioritize')
-        print(inspect.stack())
-        print(inspect.stack()[1])
-        print(inspect.stack()[1].function)
         func_name = inspect.stack()[1].function
         priority, command = ClientCommands.client_commands[func_name]
         return priority, f"{command} {payload}"
 
-    def identify(payload):
-        ticket = get_ticket() # acquired from JSON endpoint
+    def identify(ticket):
+
         payload = {
             "method": "ticket",
             "account": "my_account",
@@ -29,7 +22,8 @@ class ClientCommands:
 
     def ping():
         print('clientcommands ping')
-        return 0, "PIN"
+        # return 0, "PIN"
+        return ClientCommands.prioritize()
 
     def send_message():
         pass

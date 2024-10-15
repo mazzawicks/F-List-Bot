@@ -2,11 +2,11 @@ import asyncio
 from asyncio import PriorityQueue
 import json
 import logging
+import time
 import websockets
 from websockets.asyncio.client import connect
-import time
 
-# from client_commands import ClientCommands
+from client_commands import ClientCommands
 from server_commands import ServerCommands
 
 log = logging.getLogger('main')
@@ -26,8 +26,28 @@ class Client:
         self.server_command_list = ServerCommands.get_commands()
 
     async def login(self):
-        # ...
-        # await self.handle_websocket(ws)
+        def get_ticket():
+            return "faketicket"
+
+        ticket = get_ticket()
+
+        login_payload = {
+            "method": "ticket",
+            "account": self.config['username'],
+            "ticket": ticket,
+            "character": self.config['character_name'],
+            "cname": '',
+            "cversion": '',
+        }
+
+        identified = await ClientCommands.identify(login_payload)
+
+        if identified:
+            await self.ready()
+        else:
+            raise UnableToLoginError()
+
+    async def ready(self):
         async with connect(self.url) as websocket:
             log.info(f'connected! {websocket.remote_address}')
             await self.handle_websocket(websocket)
@@ -99,3 +119,5 @@ class Client:
 class WebsocketDisconnected(Exception):
     pass
 
+class UnableToLoginError(Exception):
+    pass
