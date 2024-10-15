@@ -20,16 +20,10 @@ class Client:
         self.rate_limit = 1
         self.last_message_time = 0
 
-        self.server_command_list = ServerCommands.get_commands()
-
-        channels = config['join_channels']
-        if channels:
-            channels = [el.strip() for el in channels]
-            channels = list(filter(lambda x: bool(x), channels))
-        else:
-            channels = []
-        self.join_channels = channels
+        self.join_channels = config['join_channels']
         # self.current_channel = None
+
+        self.server_command_list = ServerCommands.get_commands()
 
     async def login(self):
         # ...
