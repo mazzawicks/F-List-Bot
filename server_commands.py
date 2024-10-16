@@ -1,146 +1,247 @@
+import json
+from priority import Priority
+
 from client_commands import ClientCommands
 
 import logging
 log = logging.getLogger('main')
 
 class ServerCommands:
-    def read(command, payload=None):
-        print(f'servercommands read {command}, {payload}')
-        return ServerCommands.server_commands[command](payload)
+    @staticmethod
+    def read_message(msg):
+        if len(msg) < 3:
+            return Priority.SKIP, f"Message too short: {msg}"
+        #All commands look like this:
+        # XXX {"property":"value","anotherproperty":"value"}
+        command = msg[:3]
+        if command not in ServerCommands.all_commands:
+            return Priority.SKIP, f"Unrecognized command: {command}"
 
-    def get_commands():
-        return ServerCommands.server_commands.keys()
+        payload = msg[3:] #Commands without a json payload should not contain a trailing space after the message type
+        log.info(f'command {command}, payload {payload}, len {len(payload)}')
+        if len(msg) > 4:
+            try:
+                payload = json.loads(msg[4:])
+            except json.JSONDecodeError:
+                log.warning(f'Bad JSON from server: {msg}')
+                return Priority.SKIP, f"Bad JSON"
 
+        log.info(f'servercommands read {command}, {payload}')
+        priority, out_message = ServerCommands.server_commands[command](payload)
+        return priority, out_message
+    
+    ###
+    # different server commands require different actions
+    # grouping them:
+    # - data commands, usually replies from initial client commands request
+    # - interaction commands, another user did something that might require attention
+    # - room commands, confirmation of requests for joining, leaving, creating, etc
+    # - confirmation for mod commands
+    # - Identify and Ping, important ones to pay attention to
+    # - RTB, real-time bridge - notes, friend requests maybe? outside chat actions
+    #     might be more than note, need to see what else it includes
+    ### 
+    # other notes:
+    # - some commands may be paginated, or otherwise related to other commands 
+    #     being received
+    # - CHA, ORS are important to map room names and IDs
+    # - RLL, response to rolls
+    # - VAR and SYS - apparently some more free-form datastructures that need their own parsing
+    ###
+    # priority:
+    # - ACK will be for messages containing data that requires no immediate response.
+    #     This data can be passed along to whatever form of state the bot will 
+    #     maintain. For now, it's also a good way to pass something along in the 
+    #     correct format to not create an exception.
+    # - SKIP is for errors that should not be processed. If I find no other use for 
+    #     it, maybe I'll rename it to errored. Doesn't make as much sense as a 
+    #     Priority enum element though.
+    # - Immediate and relax serve to separate messages that need to cut ahead and 
+    #     those that should just be processed soon.
+    # - Lazy, I haven't actually found a use for yet, but perhaps one will come up.
+
+
+    @staticmethod
     def identified(payload):
-        print('servercommands identified')
-        return ClientCommands.identify(payload) # backwards right now, ClientCommands is called first
+        log.info('servercommands identified')
+        return ClientCommands.identify(payload) # backwards right now, ClientCommands is called first and server responds. Should actually handle response confirmation
 
+    @staticmethod
     def ping(payload=None):
-        print('servercommands ping')
-        return ClientCommands.ping()
+        log.info(f'servercommands ping: {payload}')
+        return ClientCommands.ping(payload)
 
-    def chatops_list(payload):
-        pass
-
-    def promoted_chatop(payload):
-        pass
-
-    def admin_broadcast(payload):
-        pass
-
-    def channel_description(payload):
-        pass
-
-    def public_channel_list(payload):
-        pass
-
-    def invited_to_channel(payload):
-        pass
-
-    def character_banned(payload):
-        pass
-
-    def character_kicked(payload):
-        pass
-
-    def promoted_channel_op(payload):
-        pass
-
-    def channel_ops_list(payload):
-        pass
-
-    def connected(payload):
-        pass
-
-    def removed_channel_op(payload):
-        pass
-
-    def character_set_as_owner(payload):
-        pass
-
-    def character_timed_out(payload):
-        pass
-
-    def demoted_chatop(payload):
-        pass
-
-    def error_occurred(payload):
-        pass
-
-    def character_kink_search_response(payload):
-        pass
-
-    def logged_out(payload):
-        pass
-
-    def hello_response(payload):
-        pass
-
-    def channel_data(payload):
-        pass
-
-    def character_joined(payload):
-        pass
-
-    def kinks_data(payload):
-        pass
-
-    def character_left_channel(payload):
-        pass
-
-    def character_list(payload):
-        pass
-
-    def character_connected(payload):
-        pass
-
-    def ignore_list(payload):
-        pass
-
-    def friends_list(payload):
-        pass
-
-    def private_rooms_list(payload):
-        pass
-
-    def profile_data(payload):
-        pass
-
+    @staticmethod
     def private_message(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def channel_message(payload):
-        pass
+        # character = payload['character']
+        # message = payload['message']
+        # channel = payload['channel']
+        log.info('servercommands msg')
+        return Priority.ACK, "Method not implemented yet"
+    
+    @staticmethod
+    def chatops_list(payload):
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
+    def promoted_chatop(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def admin_broadcast(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def channel_description(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def public_channel_list(payload):
+        log.info('servercommands pub channel list')
+
+    @staticmethod
+    def invited_to_channel(payload):
+        log.info('servercommands invited')
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def character_banned(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def character_kicked(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def promoted_channel_op(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def channel_ops_list(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def connected(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def removed_channel_op(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def character_set_as_owner(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def character_timed_out(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def demoted_chatop(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def error_occurred(payload):
+        log.warning('error occured')
+        log.warning(payload)
+
+    @staticmethod
+    def character_kink_search_response(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def logged_out(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def hello_response(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def channel_data(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def character_joined(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def kinks_data(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def character_left_channel(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def character_list(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def character_connected(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def ignore_list(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def friends_list(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def private_rooms_list(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
+    def profile_data(payload):
+        return Priority.ACK, "Method not implemented yet"
+
+    @staticmethod
     def roleplay_ad_message(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def dice_result(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def channel_mode_changed(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def received_note(payload):
-        pass
+        # might be more than note, need to see what else it includes
+        # probably friend requests, maybe bookmarks joining/leaving
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def admin_issue(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def character_status(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def system_message(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def character_typing(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def uptime(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
+    @staticmethod
     def server_variables(payload):
-        pass
+        return Priority.ACK, "Method not implemented yet"
 
 
     server_commands = {
@@ -187,3 +288,6 @@ class ServerCommands:
         "UPT": uptime,
         "VAR": server_variables,
     }
+
+    all_commands = server_commands.keys()
+

@@ -1,17 +1,28 @@
 import json
 import logging
+import time
 import requests
 
 log = logging.getLogger('main')
 
-config = {
-    "account": '',
-    "ticket": '',
-    "ticket_exp": '',
-}
+# class EndpointCaller:
+#     def get_ticket(self):
+#         url = endpoints['get_ticket']
+#         data = {
+#             "account": self.config['account'],
+#             "password": self.config['password'],
+#         }
+
+#         response = flist_endpoint(url, data)
+#         assert(response.status_code == 200)
+#         self.ticket = response.json()
+#         self.ticket_expires = time.time() + (25 * 60) # refresh ticket every 25 minutes
+#         log.info('ticket is good')
+#         return self.ticket
 
 def flist_endpoint(url, data): # params and data both work, but params puts creds in url_path
-    r = requests.post(url, data=data) # All endpoints use POST
+    r = requests.post(url, data=data) # All endpoints use POST 
+    # need more checking on mapping between data required for each url
     log(r.status_code)
     response = r.json()
     log(json.dumps(response, indent=2))
@@ -19,11 +30,17 @@ def flist_endpoint(url, data): # params and data both work, but params puts cred
 # Acquiring a ticket.
 # POST to 
 get_ticket_url = "https://www.f-list.net/json/getApiTicket.php" 
-# Do NOT use GET for acquiring API tickets, this is beingphased out.Send two form fields, account and password.If you do not require information about characters, friends or bookmarks, please pass one or more of the followingfields with "true" as the value(without quotes): no_characters, no_friends, no_bookmarks.Tickets are valid for 30 minutes from issue, and invalidate all previous tickets for the account when issued.
+        
+# {'characters': ['THEYSTUD SIMP'],
+# 'default_character': '',
+# 'ticket': 'fct_8db994568a7589337b144767c64c64e327ab8f99613d56f5266f893d58f280af',
+# 'friends': [],
+# 'bookmarks': [],
+# 'error': ''}
 
 
 # Sending a ticket.
-# Any endpoint that requires a ticket must have the additional POST parameters of "account" which is the usernameof the account issued the ticket, and "ticket" which is the ticket acquired during the previous step.
+# Any endpoint that requires a ticket must have the additional POST parameters of "account" which is the username of the account issued the ticket, and "ticket" which is the ticket acquired during the previous step.
 
 ### Bookmarks
 

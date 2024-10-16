@@ -1,241 +1,411 @@
 
 import inspect
 
+from priority import Priority
+
 class ClientCommands:
+    @staticmethod
     def prioritize(payload):
         func_name = inspect.stack()[1].function
         priority, command = ClientCommands.client_commands[func_name]
+        if not payload: 
+            return priority, command
         return priority, f"{command} {payload}"
-
-    def identify(ticket):
-
-        payload = {
-            "method": "ticket",
-            "account": "my_account",
-            "ticket": ticket,
-            "character": "mommy",
-            "cname": "whatever this is",
-            "cversion": "version cool",
-        }
+    
+    @staticmethod
+    def identify(payload):
+        # payload prepared upstream in login
         # return 0, f"IDN {payload}"
         return ClientCommands.prioritize(payload)
 
-    def ping():
+    @staticmethod
+    def ping(_):
         print('clientcommands ping')
         # return 0, "PIN"
+        return ClientCommands.prioritize(None)
+
+    @staticmethod
+    def send_message(channel, message):
+        payload = {
+            "channel": channel,
+            "message": message,
+        }
+        return ClientCommands.prioritize(payload)
+
+    @staticmethod
+    def join_channel(channel):
+        payload = { "channel": channel }
+        return ClientCommands.prioritize(payload)
+
+    @staticmethod
+    def create_private_channel(channel_name):
+        # unique in that this is the only time the 'channel' param is a 
+        # regular string, used as the name, instead of the ID
+        payload = { "channel": channel_name }
+        return ClientCommands.prioritize(payload)
+
+    @staticmethod
+    def get_channel_list():
         return ClientCommands.prioritize()
 
-    def send_message():
-        pass
+    @staticmethod
+    def channel_ops_list(channel):
+        payload = { "channel": channel }
+        return ClientCommands.prioritize(payload)
 
-    def join_channel():
-        pass
+    @staticmethod
+    def search_characters_by_kinks(
+        kinks,
+        genders=None,
+        orientations=None,
+        languages=None,
+        furryprefs=None,
+        roles=None
+    ):
+        # Not sure why you'd do this with a bot
+        # kinks is the only required param, everything else is an enum
+        # see client commands for full list of each enum
+        payload = {
+            "kinks": kinks,
+        }
+        if genders:
+            payload["genders"] = genders
+        if orientations:
+            payload["orientations"] = orientations
+        if languages:
+            payload["languages"] = languages
+        if furryprefs:
+            payload["furryprefs"] = furryprefs
+        if roles:
+            payload["roles"] = roles
 
-    def create_private_channel():
-        pass
+        return ClientCommands.prioritize(payload)
 
-    def get_channel_list():
-        pass
+    @staticmethod
+    def ignore(action, character=None):
+        # who would harass a bot? Plus this won't actually stop us from receiving messages
+        # The server depends on the client to block messages on the ignore list
+        # needs enum: action can be 'add', 'delete', 'notify', or 'list'
+        # if action is 'list', there's no 'character' parameter
+        payload = {
+            "action": action,
+        }
+        if action != 'list':
+            payload["character"] = character
 
-    def channel_ops_list():
-        pass
+        return ClientCommands.prioritize(payload)
 
-    def search_characters_by_kinks():
-        pass
+    @staticmethod
+    def request_character_kinks(character):
+        payload = { "character": character }
+        return ClientCommands.prioritize(payload)
 
-    def ignore():
-        pass
+    @staticmethod
+    def leave_channel(channel):
+        payload = { "channel": channel }
+        return ClientCommands.prioritize(payload)
 
-    def request_character_kinks():
-        pass
+    @staticmethod
+    def send_ad(channel, message):
+        payload = {
+            "channel": channel,
+            "message": message,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def leave_channel():
-        pass
-
-    def send_ad():
-        pass
-
+    @staticmethod
     def get_private_rooms_list():
-        pass
+        return ClientCommands.prioritize()
 
-    def send_private_message():
-        pass
+    @staticmethod
+    def send_private_message(character, message):
+        payload = {
+            "recipient": character,
+            "message": message
+        }
 
-    def get_character_data():
-        pass
+    @staticmethod
+    def get_character_data(character):
+        payload = { "character": character }
+        return ClientCommands.prioritize(payload)
 
-    def roll_dice():
-        pass
 
-    def alert_admin():
-        pass
+    @staticmethod
+    def roll_dice(channel, dice):
+        payload = {
+            "channel": channel,
+            "dice": dice,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def set_status():
-        pass
+    @staticmethod
+    def alert_admin(action, report, character):
+        # Not sure you'd want to do this with a bot
+        # enum with single value: action can only be 'report'
+        payload = {
+            "action": "report",
+            "report": report,
+            "character": character,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def typing_status():
-        pass
+    @staticmethod
+    def set_status(status, statusmsg):
+        assert(status != 'looking')
+        payload = {
+            "status": status,
+            "statusmsg": statusmsg,
+        }
+        return ClientCommands.prioritize(payload)
 
+    @staticmethod
+    def typing_status(character, status):
+        # A bot typically doesn't need to send this,
+        # unless generating a very long message
+        # needs enum: status can be 'clear', 'paused', and 'typing'
+        payload = {
+            "character": character,
+            "status": status,
+        }
+        return ClientCommands.prioritize(payload)
+
+    @staticmethod
     def request_uptime():
-        pass
+        print('clientcommands uptime')
+        return ClientCommands.prioritize()
 
 
     ### CHANNEL OP STATUS REQUIRED COMMANDS
 
-    def request_channel_banlist():
+    @staticmethod
+    def request_channel_banlist(channel):
         # Needs channel op
         # assert(.client.check_channel_op_status())
-        pass
+        payload = {
+            "channel": channel,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def ban_character_from_channel():
+    @staticmethod
+    def ban_character_from_channel(character, channel):
         # Needs channel op
         # assert(.client.check_channel_op_status())
-        pass
+        payload = {
+            "channel": channel,
+            "character": character,
+        }
+        return ClientCommands.prioritize(payload)
 
-
-    def change_channel_description():
+    @staticmethod
+    def change_channel_description(channel, description):
         # Needs channel op
         # assert(.client.check_channel_op_status())
-        pass
+        payload = {
+            "channel": channel,
+            "description": description,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def invite_to_channel():
+    @staticmethod
+    def invite_to_channel(channel, character):
+        # Needs channel op - why? double check
+        # assert(.client.check_channel_op_status())
+        payload = {
+            "channel": channel,
+            "character": character,
+        }
+        return ClientCommands.prioritize(payload)
+
+    @staticmethod
+    def kick_character(channel, character):
         # Needs channel op
         # assert(.client.check_channel_op_status())
-        pass
+        payload = {
+            "channel": channel,
+            "character": character,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def kick_character():
+    @staticmethod
+    def promote_channel_op(channel, character):
         # Needs channel op
         # assert(.client.check_channel_op_status())
-        pass
+        payload = {
+            "channel": channel,
+            "character": character,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def promote_channel_op():
+
+    @staticmethod
+    def remove_channel_op(channel, character):
         # Needs channel op
         # assert(.client.check_channel_op_status())
-        pass
+        payload = {
+            "character": character,
+            "channel": channel,
+        }
+        return ClientCommands.prioritize(payload)
 
-
-    def remove_channel_op():
+    @staticmethod
+    def set_character_as_owner(character, channel):
         # Needs channel op
         # assert(.client.check_channel_op_status())
-        pass
+        # only channel op? see if there are more up to date docs that distinguish between channel owner and moderator
+        payload = {
+            "channel": channel,
+            "character": character,
+        }
+        return ClientCommands.prioritize(payload)
+        
 
-    def set_character_as_owner():
+    @staticmethod
+    def timeout_character(channel, character, minutes):
+        # Needs channel op
+        # minutes is a number from 1 to 90
+        # assert(.client.check_channel_op_status())
+        payload = {
+            "channel": channel,
+            "character": character,
+            "length": minutes,
+        }
+        return ClientCommands.prioritize(payload)
+
+
+    @staticmethod
+    def unban_character(channel, character):
         # Needs channel op
         # assert(.client.check_channel_op_status())
-        # only channel op? see if there are more up to date logs that distinguish between channel owner and moderator
-        pass
+        payload = {
+            "channel": channel,
+            "character": character,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def timeout_character():
+    @staticmethod
+    def set_channel_mode(channel, mode):
         # Needs channel op
+        # Needs enum: mode can be 'chat', 'ads', or 'both'
         # assert(.client.check_channel_op_status())
-        pass
+        payload = {
+            "channel": channel,
+            "mode": mode,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def unban_character():
+    @staticmethod
+    def set_channel_visibility(channel, status):
         # Needs channel op
+        # Needs enum: status can be 'public' or 'private'
         # assert(.client.check_channel_op_status())
-        pass
+        payload = {
+            "channel": channel,
+            "status": status,
+        }
+        return ClientCommands.prioritize(payload)
 
-    def set_channel_mode():
-        # Needs channel op
-        # assert(.client.check_channel_op_status())
-        pass
-
-    def set_channel_visibility():
-        # Needs channel op
-        # assert(.client.check_channel_op_status())
-        pass
-
-    def timeout_user():
-        # Needs channel op
-        # assert(.client.check_channel_op_status())
-        pass
 
 
     ### UNIMPLEMENTED CHATOP AND ADMIN COMMANDS
 
-    def request_server_ban():
+    @staticmethod
+    def request_server_ban(character):
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "request server ban")
 
-    def promote_chatop():
+    @staticmethod
+    def promote_chatop(character):
         raise AdminStatusRequired("Admin status is required for this command, this bot does not implement admin commands.", "promote chatop")
 
-    def request_alts():
+    @staticmethod
+    def request_alts(charater):
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "request alts")
 
-    def admin_broadcast():
+    @staticmethod
+    def admin_broadcast(message):
         raise AdminStatusRequired("Admin status is required for this command, this bot does not implement admin commands.", "promote admin broadcast")
 
-    def create_official_channel():
+    @staticmethod
+    def create_official_channel(channel):
         raise AdminStatusRequired("Admin status is required for this command, this bot does not implement admin commands.", "create official channel")
 
-    def demote_chatop():
+    @staticmethod
+    def demote_chatop(character):
         raise AdminStatusRequired("Admin status is required for this command, this bot does not implement admin commands.", "demote chatop")
 
-    def delete_channel():
+    @staticmethod
+    def delete_channel(channel):
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "delete channel")
 
-    def request_character_server_ban():
+    @staticmethod
+    def request_character_server_ban(character):
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "request character server ban")
 
-    def reload_server_config():
+    @staticmethod
+    def reload_server_config(save):
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "reload server config")
 
-    def reward_character():
+    @staticmethod
+    def reward_character(character):
         raise AdminStatusRequired("Admin status is required for this command, this bot does not implement admin commands.", "reward character")
 
-    def unban_character_from_server():
+    @staticmethod
+    def timeout_user(character, time, reason):
+        raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "timeout user from server")
+    
+    @staticmethod
+    def unban_character_from_server(character):
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "unban character from server")
 
 
     client_commands = {
-        "identify": (0, "IDN"),
-        "ping": (0, "PIN"),
-        "send_message": (1, "MSG"),
-        "join_channel": (1, "JCH"),
-        "create_private_channel": (1, "CCR"),
-        "get_channel_list": (1, "CHA"),
-        "channel_ops_list": (1, "COL"),
-        "search_characters_by_kinks": (1, "FKS"),
-        "ignore": (1, "IGN"),
-        "request_character_kinks": (1, "KIN"),
-        "leave_channel": (1, "LCH"),
-        "send_ad": (1, "LRP"),
-        "get_private_rooms_list": (1, "ORS"),
-        "send_private_message": (1, "PRI"),
-        "get_character_data": (1, "PRO"),
-        "roll_dice": (0, "RLL"),
-        "alert_admin": (1, "SFC"),
-        "set_status": (1, "STA"),
-        "typing_status": (1, "TPN"),
-        "request_uptime": (1, "UPT"),
+        "identify": (Priority.IMMEDIATE, "IDN"),
+        "ping": (Priority.IMMEDIATE, "PIN"),
+        "send_message": (Priority.RELAX, "MSG"),
+        "join_channel": (Priority.RELAX, "JCH"),
+        "create_private_channel": (Priority.RELAX, "CCR"),
+        "get_channel_list": (Priority.RELAX, "CHA"),
+        "channel_ops_list": (Priority.RELAX, "COL"),
+        "search_characters_by_kinks": (Priority.RELAX, "FKS"),
+        "ignore": (Priority.RELAX, "IGN"),
+        "request_character_kinks": (Priority.RELAX, "KIN"),
+        "leave_channel": (Priority.RELAX, "LCH"),
+        "send_ad": (Priority.RELAX, "LRP"),
+        "get_private_rooms_list": (Priority.RELAX, "ORS"),
+        "send_private_message": (Priority.RELAX, "PRI"),
+        "get_character_data": (Priority.RELAX, "PRO"),
+        "roll_dice": (Priority.IMMEDIATE, "RLL"),
+        "alert_admin": (Priority.RELAX, "SFC"),
+        "set_status": (Priority.RELAX, "STA"),
+        "typing_status": (Priority.RELAX, "TPN"),
+        "request_uptime": (Priority.RELAX, "UPT"),
 
         ### CHANNEL OP STATUS REQUIRED COMMANDS
-        "request_channel_banlist": (1, "CBL"),
-        "ban_character_from_channel": (0, "CBU"),
-        "change_channel_description": (1, "CDS"),
-        "invite_to_channel": (1, "CIU"),
-        "kick_character": (0, "CKU"),
-        "promote_channel_op": (1, "COA"),
-        "remove_channel_op": (0, "COR"),
-        "set_character_as_owner": (0, "CSO"),
-        "timeout_character": (0, "CTU"),
-        "unban_character": (0, "CUB"),
-        "set_channel_mode": (1, "RMO"),
-        "set_channel_visibility": (1, "RST"),
-        "timeout_user": (0, "TMO"),
+        "request_channel_banlist": (Priority.RELAX, "CBL"),
+        "ban_character_from_channel": (Priority.IMMEDIATE, "CBU"),
+        "change_channel_description": (Priority.RELAX, "CDS"),
+        "invite_to_channel": (Priority.RELAX, "CIU"),
+        "kick_character": (Priority.IMMEDIATE, "CKU"),
+        "promote_channel_op": (Priority.RELAX, "COA"),
+        "remove_channel_op": (Priority.IMMEDIATE, "COR"),
+        "set_character_as_owner": (Priority.IMMEDIATE, "CSO"),
+        "timeout_character": (Priority.IMMEDIATE, "CTU"),
+        "unban_character": (Priority.IMMEDIATE, "CUB"),
+        "set_channel_mode": (Priority.RELAX, "RMO"),
+        "set_channel_visibility": (Priority.RELAX, "RST"),
         
         ### UNIMPLEMENTED CHATOP AND ADMIN COMMANDS
-        "request_server_ban": (-1, "ACB"),
-        "promote_chatop": (-1, "AOP"),
-        "request_alts": (-1, "AWC"),
-        "admin_broadcast": (-1, "BRO"),
-        "create_official_channel": (-1, "CRC"),
-        "demote_chatop": (-1, "DOP"),
-        "delete_channel": (-1, "KIC"), # Might have ability to delete self-created channel
-        "request_character_server_ban": (-1, "KIK"),
-        "reload_server_config": (-1, "RLD"),
-        "reward_character": (-1, "RWD"),
-        "unban_character_from_server": (-1, "UNB"),
+        "request_server_ban": (Priority.SKIP, "ACB"),
+        "promote_chatop": (Priority.SKIP, "AOP"),
+        "request_alts": (Priority.SKIP, "AWC"),
+        "admin_broadcast": (Priority.SKIP, "BRO"),
+        "create_official_channel": (Priority.SKIP, "CRC"),
+        "demote_chatop": (Priority.SKIP, "DOP"),
+        "delete_channel": (Priority.SKIP, "KIC"), # Might have ability to delete self-created channel
+        "request_character_server_ban": (Priority.SKIP, "KIK"),
+        "reload_server_config": (Priority.SKIP, "RLD"),
+        "reward_character": (Priority.SKIP, "RWD"),
+        "timeout_user": (Priority.SKIP, "TMO"),
+        "unban_character_from_server": (Priority.SKIP, "UNB"),
     }
 
 class AdminStatusRequired(Exception):
@@ -247,3 +417,4 @@ class ChatopStatusRequired(Exception):
     def __init__(self, message, action=None):
         super().__init__(message)
         self.action = action
+
