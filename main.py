@@ -14,7 +14,7 @@ config = {
     "password": os.getenv('password'),
     "character_name": os.getenv('character'),
     "join_channels": os.getenv('channels', []),
-    "channel_op": os.getenv('channel_op', []),
+    "channel_ops": os.getenv('channel_ops', []),
     "bot_name": "Mommybot",
     "bot_version": "0.1.0",
 }
@@ -26,13 +26,13 @@ log.setLevel(logging.DEBUG) # bring to Info later
 async def begin(config):
 
     # parse config
-    channel_ops = config['channel_op']
+    channel_ops = config['channel_ops']
     if channel_ops:
         channel_ops = [el.strip() for el in channel_ops]
         channel_ops = list(filter(lambda x: bool(x), channel_ops))
     else:
         channel_ops = []
-    config['channel_op'] = channel_ops
+    config['channel_ops'] = channel_ops
 
     channels = config['join_channels']
     if channels:

@@ -14,7 +14,7 @@ config = {
     "password": os.getenv('password'),
     "character_name": os.getenv('character'),
     "join_channels": os.getenv('channels', []),
-    "channel_op": os.getenv('channel_op', []),
+    "channel_ops": os.getenv('channel_ops', []),
     "bot_name": "Mommybot",
     "bot_version": "0.1.0",
 }

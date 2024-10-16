@@ -59,11 +59,10 @@ What channels would you like the bot to join immediately once it logs in? Do kee
 
 '''
 
-channel_op_q = '''
+channel_ops_q = '''
 *******************************************************
 
 Are there any channels your bot is a channel op in? You can customize how the bot uses moderator powers. Enter the name or names of these channels as a comma-separated list, or leave this blank.
-
 '''
 
 # filepath_q = '''
@@ -72,13 +71,15 @@ Are there any channels your bot is a channel op in? You can customize how the bo
 # Finally, where would you like your environment file to be created? It's recommended to keep it at the root of your project folder.
 # '''
 
+# Question and Answer
 class QA:
     def __init__(self, name, answer):
         self.name = name
         self.answer = answer
 
     def config_str(self):
-        return f"{self.name}=\"{self.answer}\"\n"
+        # could consider parsing to see if surrounding quotes are necessary
+        return f"{self.name}=\"{self.answer}\"\n" 
 
 _ = input(greeting)
 
@@ -87,7 +88,7 @@ qas = [
     QA("password", input(password_q)),
     QA("character", input(character_q)),
     QA("join_channels", input(join_channels_q)),
-    QA("channel_op", input(channel_op_q)),
+    QA("channel_ops", input(channel_ops_q)),
 ]
 
 # filepath = input(filepath_q)
