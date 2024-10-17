@@ -10,7 +10,7 @@ load_dotenv()
 config = {
     "url": "ws://localhost:8110",
     "chatop": False,
-    "username": os.getenv('username'),
+    "account": os.getenv('account'),
     "password": os.getenv('password'),
     "character_name": os.getenv('character'),
     "join_channels": os.getenv('channels', []),

@@ -32,11 +32,11 @@ class Client:
     async def login(self):
         self.get_ticket() # sets self.ticket and self.ticket_expires
 
-        assert(self.config['username'] in self.ticket['characters'])
+        assert(self.config['account'] in self.ticket['characters'])
 
         login_payload = {
             "method": "ticket",
-            "account": self.config['username'],
+            "account": self.config['account'],
             "ticket": self.ticket,
             "character": self.config['character'],
             "cname": self.config['bot_name'],

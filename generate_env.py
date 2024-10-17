@@ -30,11 +30,11 @@ You should also be aware that F-List has several rules that must be followed to 
 Press enter to continue.
 '''
 
-username_q = '''
+account_q = '''
 *******************************************************
 
 Now then, first question: 
-What is your account's username? This is not the name of a character, it is the username the bot will use to log in to f-list.
+What is your account's username? This is not the name of a character, it is the account the bot will use to log in to f-list.
 
 '''
 
@@ -84,7 +84,7 @@ class QA:
 _ = input(greeting)
 
 qas = [
-    QA("username", input(username_q)),
+    QA("account", input(account_q)),
     QA("password", input(password_q)),
     QA("character", input(character_q)),
     QA("join_channels", input(join_channels_q)),
