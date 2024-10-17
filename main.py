@@ -17,6 +17,7 @@ config = {
     "channel_ops": os.getenv('channel_ops', []),
     "bot_name": "Mommybot",
     "bot_version": "0.1.0",
+    "rate_limit": 1.02
 }
 
 logging.basicConfig()

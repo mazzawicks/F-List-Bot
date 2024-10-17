@@ -24,10 +24,16 @@ class Client:
 
         self.incoming_queue = PriorityQueue()
         self.outgoing_queue = PriorityQueue()
-        self.rate_limit = 10 # long for testing, set back to 1. Maybe make configurable.
+        self.rate_limit = config['rate_limit']
         self.last_message_time = 0
         self.ticket = None
         self.ticket_expires = 0
+
+        # turn these into a dict, or even a stat class
+        self._msg_received = 0
+        self._msg_skipped = 0
+        self._msg_processed = 0
+        self._msg_sent = 0
 
 
     async def login(self):
@@ -64,6 +70,7 @@ class Client:
             while True:
                 try:
                     message = await ws.recv()
+                    self._msg_received += 1
                     await in_queue.put(message)
                 except websockets.ConnectionClosedOK:
                     log.info('Connection Closed OK')
@@ -83,10 +90,12 @@ class Client:
                     raise e # for dev, else just log errors and keep the bot running
                 if priority == Priority.SKIP:
                     log.info(f"Skipping message: {formatted_message}")
+                    self._msg_skipped += 1
                     continue
                 if priority == Priority.ACK:
                     log.info(f"Acknowledging message: {formatted_message}")
                     # data and state handlers
+                    self._msg_skipped += 1
                     continue
                 log.info(f"p{priority} {formatted_message}")
                 await out_queue.put((priority, formatted_message))
@@ -98,6 +107,7 @@ class Client:
                     try:
                         priority, message = queue.get_nowait()
                         await ws.send(message)
+                        self._msg_sent += 1
                         log.info(f"sent message {message}")
                         self.last_message_time = time.time()
                     except asyncio.QueueEmpty:
