@@ -5,7 +5,7 @@ import websockets
 from websockets.asyncio.client import connect
 
 from client_commands import ClientCommands
-from json_endpoints import flist_endpoint, endpoints # , get_ticket
+from api import API
 from priority import Priority
 from server_commands import ServerCommands
 
@@ -15,6 +15,7 @@ log = logging.getLogger('main')
 class Client:
     def __init__(self, config):
         self.config = config
+        self.api = API(config)
         self.url = config['url']
         self.join_channels = config['join_channels']
         self.op_channels = config['channel_ops']
@@ -30,9 +31,9 @@ class Client:
 
 
     async def login(self):
-        self.get_ticket() # sets self.ticket and self.ticket_expires
+        self.api.refresh_ticket()
 
-        assert(self.config['account'] in self.ticket['characters'])
+        assert(self.config['character'] in self.ticket['characters'])
 
         login_payload = {
             "method": "ticket",
@@ -49,27 +50,6 @@ class Client:
             raise UnableToLogInError()
         
         await self.ready() # could separate login from ready
-
-    def get_ticket(self):
-        url = endpoints['get_ticket']
-        data = {
-            "account": self.config['account'],
-            "password": self.config['password'],
-        }
-
-        response = flist_endpoint(url, data)
-        assert(response.status_code == 200)
-        self.ticket = response.json()
-        self.ticket_expires = time.time() + (25 * 60) # refresh ticket every 25 minutes
-        log.info('ticket is good')
-        return self.ticket
-
-    def get_endpoint(self, url, data=None):
-        if time.time() > self.ticket_expires:
-            self.get_ticket()
-        response = flist_endpoint(url, data)
-        assert(response.status_code in [200, 201, 202, 203, 204]) # come back to error checking and handling
-        return response.json()
 
 
     async def ready(self):
