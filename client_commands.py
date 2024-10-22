@@ -5,7 +5,7 @@ from priority import Priority
 
 class ClientCommands:
     @staticmethod
-    def prioritize(payload):
+    def prioritize(payload=None):
         func_name = inspect.stack()[1].function
         priority, command = ClientCommands.client_commands[func_name]
         if not payload: 
@@ -19,10 +19,10 @@ class ClientCommands:
         return ClientCommands.prioritize(payload)
 
     @staticmethod
-    def ping(_):
+    def ping():
         print('clientcommands ping')
         # return 0, "PIN"
-        return ClientCommands.prioritize(None)
+        return ClientCommands.prioritize()
 
     @staticmethod
     def send_message(channel, message):
@@ -62,7 +62,7 @@ class ClientCommands:
         furryprefs=None,
         roles=None
     ):
-        # Not sure why you'd do this with a bot
+        # Same info is available via json api
         # kinks is the only required param, everything else is an enum
         # see client commands for full list of each enum
         payload = {
@@ -180,7 +180,7 @@ class ClientCommands:
     @staticmethod
     def request_channel_banlist(channel):
         # Needs channel op
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
         }
@@ -189,7 +189,7 @@ class ClientCommands:
     @staticmethod
     def ban_character_from_channel(character, channel):
         # Needs channel op
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "character": character,
@@ -199,7 +199,7 @@ class ClientCommands:
     @staticmethod
     def change_channel_description(channel, description):
         # Needs channel op
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "description": description,
@@ -209,7 +209,7 @@ class ClientCommands:
     @staticmethod
     def invite_to_channel(channel, character):
         # Needs channel op - why? double check
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "character": character,
@@ -219,7 +219,7 @@ class ClientCommands:
     @staticmethod
     def kick_character(channel, character):
         # Needs channel op
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "character": character,
@@ -229,7 +229,7 @@ class ClientCommands:
     @staticmethod
     def promote_channel_op(channel, character):
         # Needs channel op
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "character": character,
@@ -240,7 +240,7 @@ class ClientCommands:
     @staticmethod
     def remove_channel_op(channel, character):
         # Needs channel op
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "character": character,
             "channel": channel,
@@ -250,7 +250,7 @@ class ClientCommands:
     @staticmethod
     def set_character_as_owner(character, channel):
         # Needs channel op
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         # only channel op? see if there are more up to date docs that distinguish between channel owner and moderator
         payload = {
             "channel": channel,
@@ -263,7 +263,7 @@ class ClientCommands:
     def timeout_character(channel, character, minutes):
         # Needs channel op
         # minutes is a number from 1 to 90
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "character": character,
@@ -275,7 +275,7 @@ class ClientCommands:
     @staticmethod
     def unban_character(channel, character):
         # Needs channel op
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "character": character,
@@ -286,7 +286,7 @@ class ClientCommands:
     def set_channel_mode(channel, mode):
         # Needs channel op
         # Needs enum: mode can be 'chat', 'ads', or 'both'
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "mode": mode,
@@ -297,7 +297,7 @@ class ClientCommands:
     def set_channel_visibility(channel, status):
         # Needs channel op
         # Needs enum: status can be 'public' or 'private'
-        # assert(.client.check_channel_op_status())
+        # assert(State.is_channel_op(channel))
         payload = {
             "channel": channel,
             "status": status,
@@ -309,7 +309,7 @@ class ClientCommands:
     ### UNIMPLEMENTED CHATOP AND ADMIN COMMANDS
 
     @staticmethod
-    def request_server_ban(character):
+    def request_account_server_ban(character):
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "request server ban")
 
     @staticmethod
@@ -337,7 +337,7 @@ class ClientCommands:
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "delete channel")
 
     @staticmethod
-    def request_character_server_ban(character):
+    def request_character_server_kick(character):
         raise ChatopStatusRequired("Chatop status is required for this command, this bot does not implement chatop commands.", "request character server ban")
 
     @staticmethod
@@ -359,7 +359,7 @@ class ClientCommands:
 
     client_commands = {
         "identify": (Priority.IMMEDIATE, "IDN"),
-        "ping": (Priority.IMMEDIATE, "PIN"),
+        "ping": (Priority.PING, "PIN"),
         "send_message": (Priority.RELAX, "MSG"),
         "join_channel": (Priority.RELAX, "JCH"),
         "create_private_channel": (Priority.RELAX, "CCR"),
@@ -394,14 +394,14 @@ class ClientCommands:
         "set_channel_visibility": (Priority.RELAX, "RST"),
         
         ### UNIMPLEMENTED CHATOP AND ADMIN COMMANDS
-        "request_server_ban": (Priority.SKIP, "ACB"),
+        "request_account_server_ban": (Priority.SKIP, "ACB"),
         "promote_chatop": (Priority.SKIP, "AOP"),
         "request_alts": (Priority.SKIP, "AWC"),
         "admin_broadcast": (Priority.SKIP, "BRO"),
         "create_official_channel": (Priority.SKIP, "CRC"),
         "demote_chatop": (Priority.SKIP, "DOP"),
         "delete_channel": (Priority.SKIP, "KIC"), # Might have ability to delete self-created channel
-        "request_character_server_ban": (Priority.SKIP, "KIK"),
+        "request_character_server_kick": (Priority.SKIP, "KIK"),
         "reload_server_config": (Priority.SKIP, "RLD"),
         "reward_character": (Priority.SKIP, "RWD"),
         "timeout_user": (Priority.SKIP, "TMO"),

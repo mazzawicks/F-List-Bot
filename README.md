@@ -1,42 +1,20 @@
 ### An bot for f-list.net that can log into f-chat, join your room, and interact with users in customizeable ways.
-Currently building basic functionality.
+Currently building basic functionality. 
+
+- In the middle of redesigning the Event -> Handler -> Action sequence. 
+- Once that's satisfactory, live testing will begin. 
+- Following that, adding custom handlers, events, and acitons.
 
 ### Currently implemented:
-- Identify
-- Ping
+- All client and server commands, save for admin and chatop level client commands.
 
 ### Planned features
-- Message
-- Private Message
-- Join Channel
-- Make Private Room
-- roll_dice
-- set_status
-- send_ad
-- Custom Responses
-- reward_character
-- run game
-- bottle
-- interactive mode
+Need to implement:
 
-### Further down the line
-- channel_ops_list
-- promote_channel_op
-- remove_channel_op
+EventHandler
+GeneratedEvents
+DataStore
+Action
 
-- create_private_channel
-- change_channel_description
-- get_channel_list
-- invite_to_channel
-- get_private_rooms_list
-- set_channel_visibility
-- leave_channel
-
-- request_character_kinks
-- get_character_data
-- timeout_character
-- kick_character
-- ban_character_from_channel
-- unban_character
-- ignore/unignore character
-- request_channel_banlist
+### Custom Events, Handlers, Actions
+You will be able to customize your bot by adding simple handlers. You can also create and combine custom events and custom actions. Examples will be available when this feature is ready.

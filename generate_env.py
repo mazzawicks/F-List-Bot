@@ -81,7 +81,7 @@ class QA:
         # could consider parsing to see if surrounding quotes are necessary
         return f"{self.name}=\"{self.answer}\"\n" 
 
-_ = input(greeting)
+input(greeting)
 
 qas = [
     QA("account", input(account_q)),
@@ -89,6 +89,8 @@ qas = [
     QA("character", input(character_q)),
     QA("join_channels", input(join_channels_q)),
     QA("channel_ops", input(channel_ops_q)),
+    # QA("bot_name", input(bot_name_q)),
+    # QA("bot_version", input(bot_version_q)),
 ]
 
 # filepath = input(filepath_q)

@@ -1,3 +1,6 @@
 mommy/
 *pycache*
 .env
+*.har
+*.json
+*.zip

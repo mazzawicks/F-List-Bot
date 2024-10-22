@@ -35,9 +35,11 @@ class API:
 
         response = r.json() # contains characters, friends, bookmarks, and ticket
         cls.ticket = response['ticket']
-        cls.ticket_expires = time.time() + (25 * 60) # refresh ticket after 25 minutes
+        # refresh ticket for new requests after 25 minutes
+        cls.ticket_expires = time.time() + (25 * 60) 
         cls.login_fields['ticket'] = cls.ticket
         log.info('ticket is good')
+        return cls.ticket
 
     @classmethod
     def post(cls, url, data={}):

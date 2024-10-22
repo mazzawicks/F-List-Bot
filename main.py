@@ -12,21 +12,21 @@ config = {
     "chatop": False,
     "account": os.getenv('account'),
     "password": os.getenv('password'),
-    "character_name": os.getenv('character'),
+    "character": os.getenv('character'),
     "join_channels": os.getenv('channels', []),
     "channel_ops": os.getenv('channel_ops', []),
     "bot_name": "Mommybot",
     "bot_version": "0.1.0",
-    "rate_limit": 1.02
+    "rate_limit": .2
 }
 
 logging.basicConfig()
 log = logging.getLogger('main')
 log.setLevel(logging.DEBUG) # bring to Info later
 
-async def begin(config):
+# async def begin(config):
 
-    # parse config
+def parse_config(config):
     channel_ops = config['channel_ops']
     if channel_ops:
         channel_ops = [el.strip() for el in channel_ops]
@@ -44,20 +44,19 @@ async def begin(config):
     config['join_channels'] = channels
 
 
-    client = Client(config)
-
-    ws = await client.login()
-    await client.join_channels(config['join_channels'])
-
 
 async def main():
-    
+    parse_config(config)
+    # begin()
+
     log.info("Beginning Client")
-    begin()
+    client = Client(config)
+
+    await client.login()
+    await client.join_channels(config['join_channels'])
     # client = Client(config)
     # client.login()
 
     
-# Test
 if __name__ == '__main__':
     asyncio.run(main())

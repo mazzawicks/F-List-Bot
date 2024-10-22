@@ -12,12 +12,12 @@ config = {
     "chatop": False,
     "account": os.getenv('account'),
     "password": os.getenv('password'),
-    "character_name": os.getenv('character'),
+    "character": os.getenv('character'),
     "join_channels": os.getenv('channels', []),
     "channel_ops": os.getenv('channel_ops', []),
     "bot_name": "Mommybot",
     "bot_version": "0.1.0",
-    "rate_limit": 10 # easier to see slow down from many requests
+    "rate_limit": 2 # easier to see slow down from many requests
 }
 
 logging.basicConfig()
@@ -37,9 +37,11 @@ async def test_main():
     log.info("Beginning Client Test")
     client = Client(config)
 
-    async with serve(client.handle_websocket, "localhost", 8111):
-        await asyncio.get_running_loop().create_future()
+    try:
+        async with serve(client.handle_websocket, "localhost", 8111):
+            await asyncio.get_running_loop().create_future()
+    except (KeyboardInterrupt, EOFError):
+        import ipdb; ipdb.set_trace()
 
-# Test
 if __name__ == '__main__':
     asyncio.run(test_main())
